@@ -26,17 +26,46 @@ PROTOCOLS = {
 
 st.title("Temperature sensor simulator")
 st.write(
-    "Pick a **communication protocol** and a **Noise Level**. "
-    "Together they decide how often a reading fails."
+    "Choose **Manual** or **Auto** protocol mode, set **Noise Level**, then take a reading. "
+    "Protocol and noise together decide how often a read fails."
 )
 
-protocol = st.selectbox("Communication protocol", options=["SPI", "I2C", "UART"])
+mode = st.radio(
+    "Protocol selection mode",
+    options=["Manual Mode", "Auto Mode"],
+    horizontal=True,
+)
+st.write(f"**Active mode:** {mode}")
+
+noise_level = st.slider("Noise Level", min_value=0.0, max_value=1.0, value=0.2, step=0.05)
+
+if mode == "Manual Mode":
+    protocol = st.selectbox("Communication protocol", options=["SPI", "I2C", "UART"])
+else:
+    # Auto: pick a bus type from how noisy the environment is
+    if noise_level < 0.3:
+        protocol = "SPI"
+        st.info(
+            "Auto picked **SPI** because noise is **below 0.3** — "
+            "use the fast, low-error link when conditions are calm."
+        )
+    elif noise_level <= 0.6:
+        protocol = "I2C"
+        st.info(
+            "Auto picked **I2C** because noise is **between 0.3 and 0.6** — "
+            "a middle choice when things are moderately noisy."
+        )
+    else:
+        protocol = "UART"
+        st.info(
+            "Auto picked **UART** because noise is **above 0.6** — "
+            "simple serial when the environment is rough (higher protocol error rate)."
+        )
+
 p_protocol = PROTOCOLS[protocol]["error_rate"]
 
 st.write(f"**Using protocol:** {protocol}")
 st.caption(PROTOCOLS[protocol]["note"])
-
-noise_level = st.slider("Noise Level", min_value=0.0, max_value=1.0, value=0.2, step=0.05)
 
 # Combine protocol errors with environmental noise (independent chances → one formula)
 p_fail = 1 - (1 - p_protocol) * (1 - noise_level)
