@@ -14,8 +14,3 @@ Why this matters
 In real factories, communication failures can stop machines or cause wrong actions.
 This project helps understand how systems stay reliable even when things go wrong.
 
-How to run :
-git clone https://github.com/your-username/smart-factory-simulator.git
-cd smart-factory-simulator
-pip install -r requirements.txt
-streamlit run main.py
